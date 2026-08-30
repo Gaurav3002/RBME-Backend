@@ -6,8 +6,10 @@ import com.rbme.apis.entity.Company;
 import com.rbme.apis.entity.ProjectEnquiry;
 import com.rbme.apis.repository.CompanyRepository;
 import com.rbme.apis.repository.ProjectEnquiryRepository;
+import com.rbme.apis.services.EmailService;
 import com.rbme.apis.services.ProjectEnquiryService;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,115 +17,45 @@ import java.util.List;
 
 @Service
 @Transactional
-public class ProjectEnquiryServiceImpl
-        implements ProjectEnquiryService {
-
+@RequiredArgsConstructor
+public class ProjectEnquiryServiceImpl implements ProjectEnquiryService {
 
     private final ProjectEnquiryRepository enquiryRepository;
-
     private final CompanyRepository companyRepository;
+    private final EmailService emailService;
 
 
-    public ProjectEnquiryServiceImpl(ProjectEnquiryRepository enquiryRepository, CompanyRepository companyRepository) {
-        this.enquiryRepository = enquiryRepository;
-        this.companyRepository = companyRepository;
-    }
-
-
+    // =========================================================
+    // CREATE ENQUIRY
+    // =========================================================
 
     @Override
-    public ProjectEnquiryResponse createEnquiry(
-            ProjectEnquiryRequest request
-    ) {
+    public ProjectEnquiryResponse createEnquiry(ProjectEnquiryRequest request) {
 
-        Company company =
-                companyRepository.findById(request.getCompanyId())
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Company not found with id: "
-                                                + request.getCompanyId()
-                                )
-                        );
+        Company company = companyRepository.findById(request.getCompanyId()).orElseThrow(() -> new RuntimeException("Company not found with id: " + request.getCompanyId()));
 
-
-        ProjectEnquiry enquiry =
-                new ProjectEnquiry();
-
-
+        ProjectEnquiry enquiry = new ProjectEnquiry();
         enquiry.setCompany(company);
-
         enquiry.setCategory(request.getCategory());
-
         enquiry.setMachine(request.getMachine());
-
-        enquiry.setProjectType(
-                request.getProjectType()
-        );
-
-        enquiry.setCapacity(
-                request.getCapacity()
-        );
-
-        enquiry.setProduct(
-                request.getProduct()
-        );
-
-        enquiry.setAutomation(
-                request.getAutomation()
-        );
-
-        enquiry.setBudget(
-                request.getBudget()
-        );
-
-        enquiry.setMessage(
-                request.getMessage()
-        );
-
-
-        enquiry.setName(
-                request.getName()
-        );
-
-        enquiry.setBusinessName(
-                request.getBusinessName()
-        );
-
-        enquiry.setEmail(
-                request.getEmail()
-        );
-
-        enquiry.setPhone(
-                request.getPhone()
-        );
-
-        enquiry.setCity(
-                request.getCity()
-        );
-
-        enquiry.setState(
-                request.getState()
-        );
-
-
-        /*
-         * New enquiries always start as NEW.
-         */
-
+        enquiry.setProjectType(request.getProjectType());
+        enquiry.setCapacity(request.getCapacity());
+        enquiry.setProduct(request.getProduct());
+        enquiry.setAutomation(request.getAutomation());
+        enquiry.setBudget(request.getBudget());
+        enquiry.setMessage(request.getMessage());
+        enquiry.setName(request.getName());
+        enquiry.setBusinessName(request.getBusinessName());
+        enquiry.setEmail(request.getEmail());
+        enquiry.setPhone(request.getPhone());
+        enquiry.setCity(request.getCity());
+        enquiry.setState(request.getState());
         enquiry.setStatus("NEW");
-
-
-        ProjectEnquiry saved =
-                enquiryRepository.save(enquiry);
-
-
+        ProjectEnquiry saved = enquiryRepository.save(enquiry);
+        emailService.sendEnquiryNotification(saved);
         return mapToResponse(saved);
     }
 
-
-    /* =========================================================
-       GET ALL
-    ========================================================= */
 
     @Override
     @Transactional(readOnly = true)
@@ -137,9 +69,9 @@ public class ProjectEnquiryServiceImpl
     }
 
 
-    /* =========================================================
-       GET BY ID
-    ========================================================= */
+    // =========================================================
+    // GET BY ID
+    // =========================================================
 
     @Override
     @Transactional(readOnly = true)
@@ -158,9 +90,9 @@ public class ProjectEnquiryServiceImpl
     }
 
 
-    /* =========================================================
-       GET BY COMPANY
-    ========================================================= */
+    // =========================================================
+    // GET BY COMPANY
+    // =========================================================
 
     @Override
     @Transactional(readOnly = true)
@@ -176,9 +108,9 @@ public class ProjectEnquiryServiceImpl
     }
 
 
-    /* =========================================================
-       GET BY STATUS
-    ========================================================= */
+    // =========================================================
+    // GET BY STATUS
+    // =========================================================
 
     @Override
     @Transactional(readOnly = true)
@@ -194,9 +126,9 @@ public class ProjectEnquiryServiceImpl
     }
 
 
-    /* =========================================================
-       UPDATE STATUS
-    ========================================================= */
+    // =========================================================
+    // UPDATE STATUS
+    // =========================================================
 
     @Override
     public ProjectEnquiryResponse updateStatus(
@@ -213,23 +145,20 @@ public class ProjectEnquiryServiceImpl
                                 )
                         );
 
-
         enquiry.setStatus(
                 status.toUpperCase()
         );
 
-
         ProjectEnquiry updated =
                 enquiryRepository.save(enquiry);
-
 
         return mapToResponse(updated);
     }
 
 
-    /* =========================================================
-       MAPPER
-    ========================================================= */
+    // =========================================================
+    // MAPPER
+    // =========================================================
 
     private ProjectEnquiryResponse mapToResponse(
             ProjectEnquiry enquiry
@@ -238,11 +167,9 @@ public class ProjectEnquiryServiceImpl
         ProjectEnquiryResponse response =
                 new ProjectEnquiryResponse();
 
-
         response.setId(
                 enquiry.getId()
         );
-
 
         if (enquiry.getCompany() != null) {
 
@@ -254,7 +181,6 @@ public class ProjectEnquiryServiceImpl
                     enquiry.getCompany().getName()
             );
         }
-
 
         response.setCategory(
                 enquiry.getCategory()
@@ -288,7 +214,6 @@ public class ProjectEnquiryServiceImpl
                 enquiry.getMessage()
         );
 
-
         response.setName(
                 enquiry.getName()
         );
@@ -313,7 +238,6 @@ public class ProjectEnquiryServiceImpl
                 enquiry.getState()
         );
 
-
         response.setStatus(
                 enquiry.getStatus()
         );
@@ -321,7 +245,6 @@ public class ProjectEnquiryServiceImpl
         response.setCreatedAt(
                 enquiry.getCreatedAt()
         );
-
 
         return response;
     }
