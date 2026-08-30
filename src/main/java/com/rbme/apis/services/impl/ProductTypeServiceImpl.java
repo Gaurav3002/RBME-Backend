@@ -25,30 +25,69 @@ public class ProductTypeServiceImpl implements ProductTypeService {
 
     @Override
     public ProductTypeResponse createProductType(ProductTypeRequest productTypeRequest) {
-        ProductCategory category = categoryRepository.findById(productTypeRequest.getCategoryId())
-                .orElseThrow(() -> new ResourceNotFoundException("Category Not Exist With This Name!"));
-        if(productTypeRepository.existsByNameIgnoreCase(productTypeRequest.getName()) ||
-        productTypeRepository.existsByNameIgnoreCaseAndCategoryId(productTypeRequest.getName(), productTypeRequest.getCategoryId())){
-            throw new DuplicateResourceException("Product Type Already Exist!");
+
+        ProductCategory category = categoryRepository
+                .findById(productTypeRequest.getCategoryId())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Category not found!"));
+
+        String name = productTypeRequest.getName().trim();
+
+        if (productTypeRepository.existsByNameIgnoreCaseAndCategoryId(
+                name,
+                category.getId())) {
+
+            throw new DuplicateResourceException(
+                    "Product Type already exists in this category!"
+            );
         }
+
         ProductType type = new ProductType();
-        type.setName(productTypeRequest.getName());
+
+        type.setName(name);
         type.setCategory(category);
         type.setActive(productTypeRequest.getActive());
+
         productTypeRepository.save(type);
+
         return map(type);
     }
 
     @Override
-    public ProductTypeResponse updateProductType(Long id, ProductTypeRequest productTypeRequest) {
+    public ProductTypeResponse updateProductType(
+            Long id,
+            ProductTypeRequest productTypeRequest) {
+
         ProductType productType = productTypeRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("ProductType Not found!"));
-        ProductCategory category = categoryRepository.findById(productTypeRequest.getCategoryId())
-                .orElseThrow(() -> new ResourceNotFoundException("Category Not Found!"));
-        productType.setName(productTypeRequest.getName());
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("ProductType not found!"));
+
+        ProductCategory category = categoryRepository
+                .findById(productTypeRequest.getCategoryId())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Category not found!"));
+
+        String name = productTypeRequest.getName().trim();
+
+        boolean exists = productTypeRepository
+                .existsByNameIgnoreCaseAndCategoryIdAndIdNot(
+                        name,
+                        category.getId(),
+                        id
+                );
+
+        if (exists) {
+            throw new DuplicateResourceException(
+                    "Product Type already exists in this category!"
+            );
+        }
+
+        productType.setName(name);
         productType.setActive(productTypeRequest.getActive());
         productType.setCategory(category);
+
         productTypeRepository.save(productType);
+
         return map(productType);
     }
 

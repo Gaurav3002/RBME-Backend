@@ -14,4 +14,6 @@ public interface ProductTypeRepository extends JpaRepository<ProductType, Long> 
     boolean existsByNameIgnoreCaseAndCategoryId(String name, Long categoryId);
 
     List<ProductType> findByCategoryId(Long categoryId);
+    boolean existsByNameIgnoreCaseAndCategoryIdAndIdNot(String name, Long categoryId, Long id
+    );
 }

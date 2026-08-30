@@ -27,7 +27,7 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
                 .orElseThrow(() -> new ResourceNotFoundException("Company not Found"));
         if (categoryRepository.existsByNameAndCompanyId(
                 request.getName(),
-                request.getCompanyId())) {
+                company.getId())) {
 
             throw new DuplicateResourceException("Category already exists.");
         }
