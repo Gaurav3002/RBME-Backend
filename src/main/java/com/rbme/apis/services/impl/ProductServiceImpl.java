@@ -12,6 +12,7 @@ import com.rbme.apis.services.FileStorageService;
 import com.rbme.apis.services.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
@@ -30,6 +31,7 @@ public class ProductServiceImpl implements ProductService {
 
 
     @Override
+    @Transactional
     public ProductResponse createProduct(ProductRequest request) {
         Company company = companyRepository.findById(request.getCompanyId())
                 .orElseThrow(() ->
@@ -79,29 +81,37 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional
     public ProductResponse updateProduct(Long id, ProductRequest request) {
+
         Product product = productRepository.findById(id)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Product not found!"));
+
         Company company = companyRepository.findById(request.getCompanyId())
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Company not found!"));
+
         ProductCategory category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Category not found!"));
+
         ProductType type = productTypeRepository.findById(request.getProductTypeId())
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Product Type not found!"));
-        if(!category.getCompany().getId().equals(request.getCompanyId())){
+
+        if (!category.getCompany().getId().equals(company.getId())) {
             throw new IllegalArgumentException(
                     "Category does not belong to selected company!"
             );
         }
+
         if (!type.getCategory().getId().equals(category.getId())) {
             throw new IllegalArgumentException(
                     "Product Type does not belong to selected category!"
             );
         }
+
         if (request.getModelNo() != null
                 && !request.getModelNo().isBlank()
                 && productRepository.existsByModelNoIgnoreCaseAndIdNot(
@@ -113,32 +123,79 @@ public class ProductServiceImpl implements ProductService {
                     "Product with this model number already exists!"
             );
         }
+
+        // ==========================================
+        // UPDATE PRODUCT
+        // ==========================================
+
         product.setCompany(company);
         product.setCategory(category);
         product.setProductType(type);
-
         product.setModelNo(request.getModelNo());
         product.setTitle(request.getTitle());
         product.setDescription(request.getDescription());
         product.setThumbnail(request.getThumbnail());
         product.setYoutubeUrl(request.getYoutubeUrl());
+
         if (request.getFeatured() != null) {
             product.setFeatured(request.getFeatured());
         }
+
         if (request.getActive() != null) {
             product.setActive(request.getActive());
         }
+
         Product updatedProduct = productRepository.save(product);
+
+        // ==========================================
+        // DELETE SELECTED IMAGES
+        // ==========================================
+
+        System.out.println("Product ID: " + updatedProduct.getId());
+        System.out.println("Deleted Image IDs: " + request.getDeletedImageIds());
+
+        if (request.getDeletedImageIds() != null
+                && !request.getDeletedImageIds().isEmpty()) {
+
+            for (Long imageId : request.getDeletedImageIds()) {
+
+                System.out.println(
+                        "Trying to delete imageId: " + imageId
+                                + " for productId: " + updatedProduct.getId()
+                );
+
+                int deleted = productImageRepository.deleteByIdAndProductId(
+                        imageId,
+                        updatedProduct.getId()
+                );
+
+                System.out.println(
+                        "Delete result for imageId "
+                                + imageId + ": " + deleted
+                );
+
+                if (deleted == 0) {
+                    throw new ResourceNotFoundException(
+                            "Product image not found or does not belong to this product: "
+                                    + imageId
+                    );
+                }
+            }
+        }
+
+        // ==========================================
+        // ADD NEW IMAGES
+        // ==========================================
+
         if (request.getImages() != null
                 && !request.getImages().isEmpty()) {
-
-            deleteProductImages(updatedProduct);
 
             saveProductImages(
                     updatedProduct,
                     request.getImages()
             );
         }
+
         return map(updatedProduct);
     }
 
@@ -190,11 +247,12 @@ public class ProductServiceImpl implements ProductService {
 
 
     @Override
+    @Transactional
     public void delete(Long id) {
 
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found!"));
-
+        productSpecificationRepository.deleteByProductId(product.getId());
         deleteProductImages(product);
         productRepository.delete(product);
     }

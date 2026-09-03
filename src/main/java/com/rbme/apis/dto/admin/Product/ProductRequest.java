@@ -29,4 +29,5 @@ public class ProductRequest {
     private Boolean active;
 
     private List<MultipartFile> images;
+    private List<Long> deletedImageIds;
 }
