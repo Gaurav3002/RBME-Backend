@@ -3,9 +3,12 @@ package com.rbme.apis.config;
 import com.rbme.apis.security.JwtAuthenticationEntryPoint;
 import com.rbme.apis.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import org.springframework.http.HttpMethod;
 
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -24,33 +27,66 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 import java.util.List;
 
+
 @Configuration
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+
 
     @Value("${app.cors.allowed-origins}")
     private String allowedOrigins;
 
 
+    // =========================================================
+    // PASSWORD ENCODER
+    // =========================================================
+
     @Bean
     public PasswordEncoder passwordEncoder() {
+
         return new BCryptPasswordEncoder();
     }
 
 
+    // =========================================================
+    // SECURITY FILTER CHAIN
+    // =========================================================
+
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http
+    ) throws Exception {
 
         http
-                .csrf(csrf -> csrf.disable())
+
+                // =================================================
+                // CSRF
+                // =================================================
+
+                .csrf(csrf ->
+                        csrf.disable()
+                )
+
+
+                // =================================================
+                // CORS
+                // =================================================
 
                 .cors(cors ->
-                        cors.configurationSource(corsConfigurationSource())
+                        cors.configurationSource(
+                                corsConfigurationSource()
+                        )
                 )
+
+
+                // =================================================
+                // SESSION
+                // =================================================
 
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(
@@ -58,13 +94,28 @@ public class SecurityConfig {
                         )
                 )
 
+
+                // =================================================
+                // EXCEPTION HANDLING
+                // =================================================
+
                 .exceptionHandling(exception ->
                         exception.authenticationEntryPoint(
                                 jwtAuthenticationEntryPoint
                         )
                 )
 
+
+                // =================================================
+                // AUTHORIZATION
+                // =================================================
+
                 .authorizeHttpRequests(auth -> auth
+
+
+                        // =================================================
+                        // PUBLIC STATIC FILES
+                        // =================================================
 
                         .requestMatchers(
                                 "/product/images/**",
@@ -72,96 +123,227 @@ public class SecurityConfig {
                                 "/product/documents/**",
                                 "/company/logo/**",
                                 "/company/banner/**"
-                        ).permitAll()
+                        )
+                        .permitAll()
+
+
+                        // =================================================
+                        // PUBLIC ADMIN LOGIN
+                        // =================================================
 
                         .requestMatchers(
                                 "/api/admin/auth/**"
-                        ).permitAll()
+                        )
+                        .permitAll()
+
+
+                        // =================================================
+                        // PUBLIC COMPANY APIs
+                        // =================================================
 
                         .requestMatchers(
-                                "/api/project-enquiries"
-                        ).permitAll()
+                                "/api/companies/**"
+                        )
+                        .permitAll()
 
-                        // Company
+
+                        // =================================================
+                        // PUBLIC PRODUCT APIs
+                        // =================================================
+
+                        .requestMatchers(
+                                "/api/products/**"
+                        )
+                        .permitAll()
+
+
+                        // =================================================
+                        // PUBLIC PROJECT ENQUIRY CREATE ONLY
+                        // =================================================
+
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/project-enquiries"
+                        )
+                        .permitAll()
+
+
+                        // =================================================
+                        // ADMIN COMPANY APIs
+                        // =================================================
+
                         .requestMatchers(
                                 "/api/admin/companies/**"
-                        ).authenticated()
+                        )
+                        .authenticated()
 
-                        // Category
+
+                        // =================================================
+                        // ADMIN CATEGORY APIs
+                        // =================================================
+
                         .requestMatchers(
                                 "/api/admin/categories/**"
-                        ).authenticated()
+                        )
+                        .authenticated()
 
-                        // Product Type
+
+                        // =================================================
+                        // ADMIN PRODUCT TYPE APIs
+                        // =================================================
+
                         .requestMatchers(
                                 "/api/admin/product-types/**"
-                        ).authenticated()
+                        )
+                        .authenticated()
 
-                        // Product Specification
+
+                        // =================================================
+                        // ADMIN PRODUCT SPECIFICATION APIs
+                        // =================================================
+
                         .requestMatchers(
                                 "/api/admin/product-specifications/**"
-                        ).authenticated()
+                        )
+                        .authenticated()
 
-                        // Product
+
+                        // =================================================
+                        // ADMIN PRODUCT APIs
+                        // =================================================
+
                         .requestMatchers(
                                 "/api/admin/products/**"
-                        ).authenticated()
+                        )
+                        .authenticated()
 
-                        // Users
+
+                        // =================================================
+                        // ADMIN USER APIs
+                        // =================================================
+
                         .requestMatchers(
                                 "/api/admin/users/**"
-                        ).authenticated()
+                        )
+                        .authenticated()
 
-                        // Roles
+
+                        // =================================================
+                        // ADMIN ROLE APIs
+                        // =================================================
+
                         .requestMatchers(
                                 "/api/admin/roles/**"
-                        ).authenticated()
+                        )
+                        .authenticated()
 
-                        // Permissions
+
+                        // =================================================
+                        // ADMIN PERMISSION APIs
+                        // =================================================
+
                         .requestMatchers(
                                 "/api/admin/permissions/**"
-                        ).authenticated()
+                        )
+                        .authenticated()
 
-                        // Menus
+
+                        // =================================================
+                        // ADMIN MENU APIs
+                        // =================================================
+
                         .requestMatchers(
                                 "/api/admin/menus/**"
-                        ).authenticated()
+                        )
+                        .authenticated()
+
+
+                        // =================================================
+                        // COMPANY INFORMATION
+                        // =================================================
+
                         .requestMatchers(
                                 "/api/admin/companyinfo/**"
-                        ).authenticated()
+                        )
+                        .authenticated()
+
+
+                        // =================================================
+                        // BANK DETAILS
+                        // =================================================
+
                         .requestMatchers(
                                 "/api/admin/bankdetails/**"
-                        ).authenticated()
+                        )
+                        .authenticated()
+
+
+                        // =================================================
+                        // TAX INFORMATION
+                        // =================================================
+
                         .requestMatchers(
                                 "/api/admin/taxinfoDetails/**"
-                        ).authenticated()
+                        )
+                        .authenticated()
+
+
+                        // =================================================
+                        // DOCUMENT SETTINGS
+                        // =================================================
+
                         .requestMatchers(
                                 "/api/admin/document-settings/**"
-                        ).authenticated()
+                        )
+                        .authenticated()
 
-                        // Existing non-admin APIs
+
+                        // =================================================
+                        // PROJECT ENQUIRY ADMIN OPERATIONS
+                        // =================================================
+
                         .requestMatchers(
-                                "/api/categories/**",
-                                "/api/types/**",
-                                "/api/products/**"
-                        ).authenticated()
+                                "/api/project-enquiries/**"
+                        )
+                        .authenticated()
 
-                        // Other admin APIs
+
+                        // =================================================
+                        // OTHER ADMIN APIs
+                        // =================================================
+
                         .requestMatchers(
                                 "/api/admin/**"
-                        ).hasRole("ADMIN")
+                        )
+                        .hasRole("ADMIN")
 
-                        .anyRequest().authenticated()
+
+                        // =================================================
+                        // EVERYTHING ELSE
+                        // =================================================
+
+                        .anyRequest()
+                        .authenticated()
                 )
+
+
+                // =================================================
+                // JWT FILTER
+                // =================================================
 
                 .addFilterBefore(
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class
                 );
 
+
         return http.build();
     }
 
+
+    // =========================================================
+    // CORS CONFIGURATION
+    // =========================================================
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
@@ -169,12 +351,27 @@ public class SecurityConfig {
         CorsConfiguration configuration =
                 new CorsConfiguration();
 
+
+        // =========================================================
+        // ALLOWED ORIGINS
+        // =========================================================
+
         configuration.setAllowedOrigins(
-                Arrays.stream(allowedOrigins.split(","))
+
+                Arrays.stream(
+                                allowedOrigins.split(",")
+                        )
                         .map(String::trim)
-                        .filter(origin -> !origin.isEmpty())
+                        .filter(
+                                origin -> !origin.isEmpty()
+                        )
                         .toList()
         );
+
+
+        // =========================================================
+        // ALLOWED METHODS
+        // =========================================================
 
         configuration.setAllowedMethods(
                 Arrays.asList(
@@ -187,17 +384,42 @@ public class SecurityConfig {
                 )
         );
 
+
+        // =========================================================
+        // ALLOWED HEADERS
+        // =========================================================
+
         configuration.setAllowedHeaders(
                 List.of("*")
         );
+
+
+        // =========================================================
+        // EXPOSED HEADERS
+        // =========================================================
 
         configuration.setExposedHeaders(
                 List.of("Authorization")
         );
 
+
+        // =========================================================
+        // ALLOW CREDENTIALS
+        // =========================================================
+
         configuration.setAllowCredentials(true);
 
+
+        // =========================================================
+        // PREFLIGHT CACHE
+        // =========================================================
+
         configuration.setMaxAge(3600L);
+
+
+        // =========================================================
+        // REGISTER CORS
+        // =========================================================
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
@@ -206,6 +428,7 @@ public class SecurityConfig {
                 "/**",
                 configuration
         );
+
 
         return source;
     }
