@@ -18,17 +18,41 @@ public class FileResourceConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
 
+        // =========================================================
+        // PUBLIC UPLOADS
+        // /uploads/** -> /app/uploads/**
+        // =========================================================
+
+        registry.addResourceHandler("/uploads/**")
+                .addResourceLocations(
+                        "file:" + uploadPath + "/"
+                );
+
+        // =========================================================
+        // PRODUCT IMAGES
+        // /product/images/** -> /app/uploads/product/images/**
+        // =========================================================
+
         registry.addResourceHandler("/product/images/**")
                 .addResourceLocations(
                         "file:" + uploadPath + "/product/images/"
                 );
+
+        // =========================================================
+        // COMPANY BANNERS
+        // /company/banner/** -> /app/uploads/company/banner/**
+        // =========================================================
 
         registry.addResourceHandler("/company/banner/**")
                 .addResourceLocations(
                         "file:" + uploadPath + "/company/banner/"
                 );
 
-        // Company logo
+        // =========================================================
+        // COMPANY LOGOS
+        // /company/logo/** -> /app/uploads/company/logo/**
+        // =========================================================
+
         registry.addResourceHandler("/company/logo/**")
                 .addResourceLocations(
                         "file:" + uploadPath + "/company/logo/"
@@ -37,25 +61,35 @@ public class FileResourceConfig implements WebMvcConfigurer {
 
     @PostConstruct
     public void checkUploadDirectory() {
+
         System.out.println("=================================");
         System.out.println("UPLOAD PATH: " + uploadPath);
 
         File directory = new File(uploadPath);
 
-        System.out.println("DIRECTORY EXISTS: " + directory.exists());
-        System.out.println("DIRECTORY: " + directory.getAbsolutePath());
+        System.out.println(
+                "DIRECTORY EXISTS: " + directory.exists()
+        );
+
+        System.out.println(
+                "DIRECTORY: " + directory.getAbsolutePath()
+        );
 
         File imageDirectory =
                 new File(uploadPath + "/product/images");
 
         System.out.println(
-                "IMAGE DIRECTORY EXISTS: " + imageDirectory.exists()
+                "IMAGE DIRECTORY EXISTS: "
+                        + imageDirectory.exists()
         );
 
         if (imageDirectory.exists()) {
+
             System.out.println(
                     "IMAGE FILES: "
-                            + Arrays.toString(imageDirectory.list())
+                            + Arrays.toString(
+                            imageDirectory.list()
+                    )
             );
         }
 
