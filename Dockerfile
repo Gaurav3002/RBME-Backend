@@ -19,6 +19,6 @@ WORKDIR /app
 
 COPY --from=build /app/target/*.jar rbme-api.jar
 
-EXPOSE 8080
+EXPOSE 9292
 
 ENTRYPOINT ["java", "-jar", "rbme-api.jar"]

@@ -5,6 +5,7 @@ import com.rbme.apis.dto.admin.Product.ProductResponse;
 import com.rbme.apis.services.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,6 +19,7 @@ public class ProductController {
 
 
 
+    @PreAuthorize("hasAuthority('PRODUCT_CREATE')")
     @PostMapping
     public ResponseEntity<ProductResponse> create(
             @ModelAttribute ProductRequest request) {
@@ -28,7 +30,7 @@ public class ProductController {
     }
 
 
-
+    @PreAuthorize("hasAuthority('PRODUCT_EDIT')")
     @PutMapping("/{id}")
     public ResponseEntity<ProductResponse> update(
             @PathVariable Long id,
@@ -40,7 +42,7 @@ public class ProductController {
     }
 
 
-
+    @PreAuthorize("hasAuthority('PRODUCT_DELETE')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(
             @PathVariable Long id) {
@@ -51,7 +53,7 @@ public class ProductController {
     }
 
 
-
+    @PreAuthorize("hasAuthority('PRODUCT_VIEW')")
     @GetMapping
     public ResponseEntity<List<ProductResponse>> getAll() {
 
@@ -61,7 +63,7 @@ public class ProductController {
     }
 
 
-
+    @PreAuthorize("hasAuthority('PRODUCT_VIEW')")
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponse> getById(
             @PathVariable Long id) {
@@ -72,7 +74,7 @@ public class ProductController {
     }
 
 
-
+    @PreAuthorize("hasAuthority('PRODUCT_VIEW')")
     @GetMapping("/company/{companyId}")
     public ResponseEntity<List<ProductResponse>> getByCompany(
             @PathVariable Long companyId) {
@@ -82,7 +84,7 @@ public class ProductController {
         );
     }
 
-
+    @PreAuthorize("hasAuthority('PRODUCT_VIEW')")
     @GetMapping("/category/{categoryId}")
     public ResponseEntity<List<ProductResponse>> getByCategory(
             @PathVariable Long categoryId) {
@@ -93,7 +95,7 @@ public class ProductController {
     }
 
 
-
+    @PreAuthorize("hasAuthority('PRODUCT_VIEW')")
     @GetMapping("/productType/{productTypeId}")
     public ResponseEntity<List<ProductResponse>> getByType(
             @PathVariable Long productTypeId) {
@@ -103,7 +105,7 @@ public class ProductController {
         );
     }
 
-
+    @PreAuthorize("hasAuthority('PRODUCT_VIEW')")
     @GetMapping("/active")
     public ResponseEntity<List<ProductResponse>> getActiveProducts() {
 
@@ -112,7 +114,7 @@ public class ProductController {
         );
     }
 
-
+    @PreAuthorize("hasAuthority('PRODUCT_VIEW')")
     @GetMapping("/featured")
     public ResponseEntity<List<ProductResponse>> getFeaturedProducts() {
 

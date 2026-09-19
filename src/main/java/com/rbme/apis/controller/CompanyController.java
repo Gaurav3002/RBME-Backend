@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,6 +24,7 @@ public class CompanyController {
     /**
      * Create Company
      */
+    @PreAuthorize("hasAuthority('COMPANY_CREATE')")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<CompanyResponse> createCompany(
             @ModelAttribute @Valid CompanyCreateRequest request) {
@@ -33,6 +35,7 @@ public class CompanyController {
     /**
      * Update Company
      */
+    @PreAuthorize("hasAuthority('COMPANY_EDIT')")
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<CompanyResponse> updateCompany(
             @PathVariable Long id,
@@ -44,6 +47,7 @@ public class CompanyController {
     /**
      * Get Company By Id
      */
+    @PreAuthorize("hasAuthority('COMPANY_VIEW')")
     @GetMapping("/{id}")
     public ResponseEntity<CompanyResponse> getCompanyById(
             @PathVariable Long id) {
@@ -54,6 +58,7 @@ public class CompanyController {
     /**
      * Get All Companies
      */
+    @PreAuthorize("hasAuthority('COMPANY_VIEW')")
     @GetMapping
     public ResponseEntity<List<CompanyResponse>> getAllCompanies() {
 
@@ -63,6 +68,7 @@ public class CompanyController {
     /**
      * Delete Company
      */
+    @PreAuthorize("hasAuthority('COMPANY_DELETE')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCompany(
             @PathVariable Long id) {
@@ -75,6 +81,7 @@ public class CompanyController {
     /**
      * Update Company Status
      */
+    @PreAuthorize("hasAuthority('COMPANY_EDIT')")
     @PatchMapping("/{id}/status")
     public ResponseEntity<Void> updateStatus(
             @PathVariable Long id,
