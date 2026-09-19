@@ -118,6 +118,7 @@ public class SecurityConfig {
                         // =================================================
 
                         .requestMatchers(
+                                "/uploads/**",
                                 "/product/images/**",
                                 "/product/thumbnail/**",
                                 "/product/documents/**",
