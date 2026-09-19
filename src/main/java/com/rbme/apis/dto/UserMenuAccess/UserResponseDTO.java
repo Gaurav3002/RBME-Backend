@@ -1,14 +1,13 @@
-package com.rbme.apis.dto.admin;
+package com.rbme.apis.dto.UserMenuAccess;
 
-import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-@Data
-@Builder
-public class AdminResponse {
-
+@Getter
+@Setter
+public class UserResponseDTO {
     private Long id;
 
     private String fullName;
@@ -17,11 +16,15 @@ public class AdminResponse {
 
     private String email;
 
-    private String role;
+    private Long roleId;
+
+    private String roleName;
 
     private Boolean active;
 
     private LocalDateTime lastLogin;
 
     private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
 }
